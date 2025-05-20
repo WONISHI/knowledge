@@ -4,7 +4,7 @@ export default defineConfig({
   base: "/",
   title: "关于收集插件的用法",
   description: "A VitePress Site",
-  head: [["link", { rel: "icon", href: "/knowledge/logo.svg" }]],
+  head: [["link", { rel: "icon", href: "/logo.svg" }]],
   ignoreDeadLinks: true,
   markdown: {
     // 是否在代码块中启用行号
