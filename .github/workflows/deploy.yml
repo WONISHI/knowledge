@@ -47,8 +47,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: site
-          path: .vitepress/dist
+            name: site
+            path: .vitepress/dist
 
   deploy:
     environment:
@@ -58,6 +58,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: site
+          path: dist
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
