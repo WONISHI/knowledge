@@ -27,7 +27,7 @@ export default defineConfig({
     nav: [
       {
         text: "首页",
-        items: [{ text: "尚医通", link: "http://8.134.184.87" }],
+        items: [{ text: "尚医通", link: "http://8.134.184.87/home" },{text:'libretv',link:'https://libretv-4ha.pages.dev/'}],
       },
       {
         text: "示例",
