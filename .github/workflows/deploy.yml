@@ -1,68 +1,41 @@
-name: Deploy VitePress site to Pages
+name: Deploy VitePress site to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main # 或你的主分支名
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
+  contents: write # 必须要写权限才能推送到 gh-pages 分支
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout source code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2.2.4
         with:
           version: 8.6.12
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
           cache: pnpm
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build with VitePress
-        run: |
-          pnpm run docs:build
-          touch .vitepress/dist/.nojekyll
+      - name: Build VitePress site
+        run: pnpm run docs:build
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-            name: site
-            path: .vitepress/dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
-    runs-on: ubuntu-latest
-    name: Deploy
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: site
-          path: dist
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .vitepress/dist
+          publish_branch: gh-pages # 可选，默认就是 gh-pages
