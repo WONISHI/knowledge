@@ -1,7 +1,7 @@
 import { defineConfig } from "vitepress";
 import { set_sidebar } from "./utils/auto_sidebar.js";
 export default defineConfig({
-  base: "/knowledge/",
+  base: "/",
   title: "关于收集插件的用法",
   description: "A VitePress Site",
   head: [["link", { rel: "icon", href: "/knowledge/logo.svg" }]],
