@@ -2,7 +2,7 @@ import { defineConfig } from "vitepress";
 import { set_sidebar } from "./utils/auto_sidebar.js";
 export default defineConfig({
   base: "/",
-  title: "关于收集插件的用法",
+  title: "魏志峰的博客",
   description: "A VitePress Site",
   head: [["link", { rel: "icon", href: "/logo.svg" }]],
   ignoreDeadLinks: true,
