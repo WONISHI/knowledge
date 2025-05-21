@@ -1,5 +1,7 @@
 import { defineConfig } from "vitepress";
 import { set_sidebar } from "./utils/auto_sidebar.js";
+import { loadFilesFromDir } from "./utils/auto_nav.js";
+loadFilesFromDir()
 export default defineConfig({
   base: "/",
   title: "魏志峰的博客",
