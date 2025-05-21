@@ -3,7 +3,7 @@
 layout: home
 
 hero:
-  name: "关于收集插件的用法"
+  name: "魏志峰的博客"
   text: "灵感和想法"
   tagline: 持续学习，持续进步
   image:
