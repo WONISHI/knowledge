@@ -1,7 +1,6 @@
 import { defineConfig } from "vitepress";
 import { set_sidebar } from "./utils/auto_sidebar.js";
 import { loadFilesFromDir } from "./utils/auto_nav.js";
-loadFilesFromDir()
 export default defineConfig({
   base: "/",
   title: "魏志峰的博客",
@@ -26,25 +25,11 @@ export default defineConfig({
       prev: "上一页",
       next: "下一页",
     },
-    nav: [
-      {
-        text: "首页",
-        items: [{ text: "尚医通", link: "http://8.134.184.87/home" },{text:'libretv',link:'https://libretv-4ha.pages.dev/'}],
-      },
-      {
-        text: "示例",
-        items: [
-          { text: "pdfjs", link: "/src/pdfjs/第一章关于pdfjs.md" },
-          { text: "qiankun", link: "/src/qiankun/qiankun教程.md" },
-          { text: "utilify", link: "/src/utilfy/说明文档.md" },
-          { text: "vue源码", link: "/src/vue源码/rollup配置.md" },
-        ],
-      },
-    ],
+    nav: loadFilesFromDir(),
 
     sidebar: {
       "/src/qiankun": set_sidebar("/src/qiankun"),
-      "/src/vue源码":set_sidebar("/src/vue源码")
+      "/src/vue源码": set_sidebar("/src/vue源码"),
     },
 
     socialLinks: [
