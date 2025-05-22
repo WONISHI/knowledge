@@ -1,6 +1,7 @@
 import { defineConfig } from "vitepress";
 import { set_sidebar } from "./utils/auto_sidebar.js";
 import { loadFilesFromDir } from "./utils/auto_nav.js";
+console.log(set_sidebar("/src/vue源码"))
 export default defineConfig({
   base: "/",
   title: "魏志峰的博客",
@@ -11,6 +12,7 @@ export default defineConfig({
     // 是否在代码块中启用行号
     lineNumbers: true,
   },
+  lastUpdated: true,
   lastUpdatedText: true,
   themeConfig: {
     logo: "/logo.svg",
