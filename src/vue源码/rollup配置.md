@@ -18,18 +18,6 @@ npm init -y
 
 ## 安装依赖
 
-* @babel/preset-env
-* @babel/core
-* rollup
-* rollup-plugin-babel
-* rollup-plugin-serve -D
-
-```JS
-npm install @babel/preset-env @babel/core rollup rollup-plugin-babel rollup-plugin-serve -D
-```
-
-
-
 **安装相关依赖（vue2源代码中安装的依赖）**
 
 | 依赖                        | 版本   | 说明                                                         | 备注 |
@@ -255,6 +243,192 @@ export default{
 }
 ```
 
+vue源码执行的构建`rollup -w -c scripts/config.js --environment TARGET:full-dev`
+
+```js
+const path = require("path");
+const alias = require("@rollup/plugin-alias");
+const cjs = require("@rollup/plugin-commonjs");
+const replace = require("@rollup/plugin-replace");
+const ts = require("rollup-plugin-typescript2");
+const patchJson5Deps = require("../plugins/patchJson5Deps");
+const featureFlags = require("./feature-flags");
+// 打印调试需要把rollup的watch模式关闭
+// ？process.env.VERSION哪里设置的
+// 设定版本号
+const version = process.env.VERSION || require("../package.json").version;
+// Rollup 构建时输出文件的注释头
+const banner =
+  "/*!\n" +
+  ` * Vue.js v${version}\n` +
+  ` * (c) 2014-${new Date().getFullYear()} Evan You\n` +
+  " * Released under the MIT License.\n" +
+  " */";
+
+// ? rollup如何配置别名
+/**
+ * alias({
+ *     entries: [
+ *       { find: '@myLib', replacement: './src/myLib' },
+ *       // 添加更多别名映射...
+ *     ],
+ *   }),
+ * import myModule from '@myLib/module';
+ */
+
+// 引入别名
+const aliases = require("./alias");
+
+// ['web','entry-runtime-with-compiler.ts']==>base=web=>aliases[base]=resolve('src/platforms/web')=>aliases[base]='那个盘/src/platforms/web（绝对地址）'
+//   =>path.resolve(aliases[base], p.slice(base.length + 1))==>'那个盘/src/platforms/web（绝对地址）'+'entry-runtime-with-compiler.ts'
+/**
+ *
+ * aliases={
+ *    vue: resolve('src/platforms/web/entry-runtime-with-compiler'),
+ *    compiler: resolve('src/compiler'),
+ *    core: resolve('src/core'),
+ *    shared: resolve('src/shared'),
+ *    web: resolve('src/platforms/web'),
+ *    server: resolve('packages/server-renderer/src'),
+ *    sfc: resolve('packages/compiler-sfc/src')
+ * }
+ * @returns
+ */
+
+const resolve = (p) => {
+  const base = p.split("/")[0];
+  if (aliases[base]) {
+    return path.resolve(aliases[base], p.slice(base.length + 1));
+  } else {
+    return path.resolve(__dirname, "../", p);
+  }
+};
+
+const builds = {
+  "full-dev": {
+    entry: resolve("web/entry-runtime-with-compiler.ts"),
+    dest: resolve("dist/vue.js"),
+    format: "umd",
+    env: "development",
+    alias: { he: "./entity-decoder" },
+    banner,
+  },
+};
+
+function genConfig(name) {
+  const opts = builds[name];
+  // ?? 这个是什么意思
+  // isTargetingBrowser 的意思是：是否正在构建用于浏览器的版本。这个变量会在后续决定是否启用某些浏览器特有的构建逻辑，比如：
+  // 插入 window、document 等全局对象的代码；
+  // 输出为 ESModule 格式（浏览器支持）；
+  // 启用浏览器开发时调试标志。
+  const isTargetingBrowser = !(
+    opts.transpile === false || opts.format === "cjs"
+  );
+  console.log(Object.assign({}, aliases, opts.alias),opts.alias)
+  /**
+   * {
+   *   vue: '/Users/weizhifeng/Desktop/未命名文件夹/vue-source-code/src/platforms/web/entry-runtime-with-compiler',
+   *   compiler: '/Users/weizhifeng/Desktop/未命名文件夹/vue-source-code/src/compiler',
+   *   core: '/Users/weizhifeng/Desktop/未命名文件夹/vue-source-code/src/core',
+   *   shared: '/Users/weizhifeng/Desktop/未命名文件夹/vue-source-code/src/shared',
+   *   web: '/Users/weizhifeng/Desktop/未命名文件夹/vue-source-code/src/platforms/web',
+   *   server: '/Users/weizhifeng/Desktop/未命名文件夹/vue-source-code/packages/server-renderer/src',
+   *   sfc: '/Users/weizhifeng/Desktop/未命名文件夹/vue-source-code/packages/compiler-sfc/src',
+   *   he: './entity-decoder'
+   * }
+   */
+
+  /**
+   * output: {
+       exports: "auto",
+    }
+   * 取值	说明
+   * "auto"	自动判断导出方式（默认）。如果模块有默认导出，就用 module.exports = ...；否则用 exports.xxx = ...。
+   * "default"	统一使用 module.exports = ...，无论有没有默认导出。
+   * "named"	使用 exports.xxx = ... 形式，适合多命名导出的模块。
+   * "none"	不生成任何导出语句，适合你自己手动管理导出逻辑的场景。
+   */
+  const config = {
+    input: opts.entry,
+    external: opts.external,
+    plugins: [
+      patchJson5Deps([
+        path.resolve(__dirname, "../", "package.json"),
+        path.resolve(__dirname, "../", "tsconfig.json")
+      ]),
+      alias({
+        entries: Object.assign({}, aliases, opts.alias),
+      }),
+      ts({
+        tsconfig: path.resolve(__dirname, "../", "tsconfig.json"),
+        cacheRoot: path.resolve(__dirname, "../", "node_modules/.rts2_cache"),
+        tsconfigOverride: {
+          compilerOptions: {
+            // if targeting browser, target es5
+            // if targeting node, es2017 means Node 8
+            target: isTargetingBrowser ? "es5" : "es2017",
+          },
+          include: isTargetingBrowser ? ["src"] : ["src", "packages/*/src"],
+          exclude: ["test", "test-dts"],
+        },
+      }),
+    ].concat(opts.plugins || []),
+    output: {
+      file: opts.dest,
+      format: opts.format,
+      banner: opts.banner,
+      name: opts.moduleName || "Vue",
+      exports: "auto",
+    },
+    // 过滤掉某些你不关心的警告，不显示出来。
+    onwarn: (msg, warn) => {
+      if (!/Circular/.test(msg)) {
+        warn(msg);
+      }
+    },
+  };
+
+  // console.log('pluging', config.plugins)
+
+  // built-in vars
+  const vars = {
+    __VERSION__: version,
+    __DEV__: `process.env.NODE_ENV !== 'production'`,
+    __TEST__: false,
+    __GLOBAL__: opts.format === "umd" || name.includes("browser"),
+  };
+  // feature flags
+  Object.keys(featureFlags).forEach((key) => {
+    vars[`process.env.${key}`] = featureFlags[key];
+  });
+  // build-specific env
+  if (opts.env) {
+    vars["process.env.NODE_ENV"] = JSON.stringify(opts.env);
+    vars.__DEV__ = opts.env !== "production";
+  }
+  // 开启防止错误赋值模式
+  vars.preventAssignment = true;
+  config.plugins.push(replace(vars));
+
+  Object.defineProperty(config, "_name", {
+    enumerable: false,
+    value: name,
+  });
+  console.log(config);
+  return config;
+}
+
+
+if (process.env.TARGET) {
+  module.exports = genConfig(process.env.TARGET);
+} else {
+  // 这样写是为了什么？
+  exports.getBuild = genConfig;
+  exports.getAllBuilds = () => Object.keys(builds).map(genConfig);
+}
+```
+
 ## 执行命令
 
 ```json
@@ -281,7 +455,37 @@ export default{
 
 rollup.js2.56.0
 
-## babela预解析
+vue源码的构建
+
+```json
+"scripts": {
+    "dev": "rollup -w -c scripts/config.js --environment TARGET:full-dev",
+    "dev:cjs": "rollup -w -c scripts/config.js --environment TARGET:runtime-cjs-dev",
+    "dev:esm": "rollup -w -c scripts/config.js --environment TARGET:runtime-esm",
+    "dev:ssr": "rollup -w -c scripts/config.js --environment TARGET:server-renderer",
+    "dev:compiler": "rollup -w -c scripts/config.js --environment TARGET:compiler ",
+    "build": "node scripts/build.js",
+    "build:ssr": "npm run build -- runtime-cjs,server-renderer",
+    "build:types": "rimraf temp && tsc --declaration --emitDeclarationOnly --outDir temp && api-extractor run && api-extractor run -c packages/compiler-sfc/api-extractor.json",
+    "test": "npm run ts-check && npm run test:types && npm run test:unit && npm run test:e2e && npm run test:ssr && npm run test:sfc",
+    "test:unit": "vitest run test/unit",
+    "test:ssr": "npm run build:ssr && vitest run server-renderer",
+    "test:sfc": "vitest run compiler-sfc",
+    "test:e2e": "npm run build -- full-prod,server-renderer-basic && vitest run test/e2e",
+    "test:transition": "karma start test/transition/karma.conf.js",
+    "test:types": "npm run build:types && tsc -p ./types/tsconfig.json",
+    "format": "prettier --write --parser typescript \"(src|test|packages|types)/**/*.ts\"",
+    "ts-check": "tsc -p tsconfig.json --noEmit",
+    "ts-check:test": "tsc -p test/tsconfig.json --noEmit",
+    "bench:ssr": "npm run build:ssr && node benchmarks/ssr/renderToString.js && node benchmarks/ssr/renderToStream.js",
+    "release": "node scripts/release.js",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
+  },
+```
+
+
+
+## babela预解析(源码没有babel预解析)
 
 创建.babelrc
 ```js
