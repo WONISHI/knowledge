@@ -1,7 +1,7 @@
 import { defineConfig } from "vitepress";
 import { set_sidebar } from "./utils/auto_sidebar.js";
 import { loadFilesFromDir } from "./utils/auto_nav.js";
-console.log(set_sidebar("/src/vue源码"))
+
 export default defineConfig({
   base: "/",
   title: "魏志峰的博客",
@@ -30,6 +30,7 @@ export default defineConfig({
     nav: loadFilesFromDir(),
 
     sidebar: {
+      "/src/lumen-ui": set_sidebar("/src/lumen-ui"),
       "/src/qiankun": set_sidebar("/src/qiankun"),
       "/src/vue源码": set_sidebar("/src/vue源码"),
     },

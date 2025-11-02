@@ -1,6 +1,6 @@
 [
   { "text": "pdfjs", "link": "/src/pdfjs/第一章关于pdfjs.md" },
   { "text": "qiankun", "link": "/src/qiankun/qiankun教程.md" },
-  { "text": "utilify", "link": "/src/utilfy/说明文档.md" },
+  { "text": "utilify", "link": "/src/utilfy/index.md" },
   { "text": "vue源码", "link": "/src/vue源码/rollup配置.md" }
 ]
