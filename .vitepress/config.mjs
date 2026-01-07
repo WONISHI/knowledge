@@ -1,6 +1,11 @@
 import { defineConfig } from "vitepress";
 import { set_sidebar } from "./utils/auto_sidebar.js";
 import { loadFilesFromDir } from "./utils/auto_nav.js";
+import NavGen from "./plugs/NavGen/NavGen.js"
+
+NavGen.load()
+
+console.log(loadFilesFromDir())
 
 export default defineConfig({
   base: "/",

@@ -1,0 +1,10 @@
+{
+  "title":"jekins",
+  "describe": "",
+  "routes": ["工具","jekins"],
+  "menus": [
+    "持续集成工具",
+    "javaEE项目部署方式对比",
+    "subversion环境要求"
+  ]
+}
