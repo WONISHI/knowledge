@@ -9,7 +9,7 @@ console.log(loadFilesFromDir())
 
 export default defineConfig({
   base: "/",
-  title: "魏志峰的博客",
+  title: "码路拾遗",
   description: "A VitePress Site",
   head: [["link", { rel: "icon", href: "/logo.svg" }]],
   ignoreDeadLinks: true,

@@ -3,8 +3,8 @@
 layout: home
 
 hero:
-  name: "魏志峰的博客"
-  text: "灵感和想法"
+  name: "码路拾遗"
+  text: "(Wei's Tech Blog)"
   tagline: 持续学习，持续进步
   image:
     src: /bg.png
